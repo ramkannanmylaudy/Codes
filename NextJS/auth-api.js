@@ -26,7 +26,6 @@ export const authOptions = {
                     if (!passwordsMatch) {
                         return null;
                     }
-
                     return user;
                 } catch (error) {
                     console.log("Error: ", error);
@@ -34,6 +33,18 @@ export const authOptions = {
             },
         }),
     ],
+    callbacks: {
+        async session(data) {
+            let session = data.session;
+
+            await connectMongo();
+            const userDataFromDB = await UserModel.findOne({ email: session.user.email });
+
+            session.user.role = userDataFromDB.role;
+
+            return Promise.resolve(session);
+        },
+    },
     session: {
         strategy: "jwt",
     },
